@@ -8,6 +8,25 @@ dotenv.config();
 const APIKEY = process.env.APIKEY;
 const PORT = process.env.PORT;
 
+app.use(express.json());
+const pg = require("pg");
+const DATABASE_URL = process.env.DATA
+const Client = new pg.Client(DATABASE_URL);
+
+
+app.post("/addMovie", addMovieHandler);
+app.get("/getMovies", getMovieHandler);
+app.get(`/`, review);
+app.get("/favorite", favoritePage);
+app.get("/trending", getTrendingHandler);
+app.get("/search", searchMoviesHandler);
+app.get("/configuration", conf)
+
+
+
+
+
+
 
 
 function Movie(id, title, release_date, poster_path, overview) {
@@ -19,7 +38,36 @@ function Movie(id, title, release_date, poster_path, overview) {
 
 }
 
-app.get(`/`, review);
+
+
+function addMovieHandler(req, res) {
+    let movie = req.body;
+
+    const sql = `INSERT INTO addMovie( id,title,release_date, poster_path, overview,comment) VALUES($1, $2, $3, $4, $5,$6) RETURNING * ;`
+    let values = [movie.id, movie.title, movie.release_date, movie.poster_path, movie.overview, movie.comment];
+    client.query(sql, values).then((data) => {
+        return res.status(201).json(data.rows[0]);
+    }).catch((error) => {
+        errorHandler(error, req, res);
+    })
+};
+
+
+
+
+
+
+function getMovieHandler(req, res) {
+    const sql = `SELECT * FROM addMovie`;
+    client.query(sql).then(data => {
+        return res.status(200).json(data.rows);
+    }).catch((error) => {
+        errorHandler(error, req, res);
+    })
+}
+
+
+
 
 function review(req, res) {
 
@@ -33,14 +81,14 @@ function review(req, res) {
 
 
 
-app.get("/favorite", favoritePage);
+
 
 function favoritePage(req, res) {
     return res.status(200).send("Welcome to Favorite Page");
 }
 
 
-app.get("/trending", getTrendingHandler)
+
 
 function getTrendingHandler(req, res) {
     let trendMovie = [];
@@ -49,7 +97,7 @@ function getTrendingHandler(req, res) {
             let oneMovie = new Movie(element.id, element.title, element.release_date, element.poster_path, element.overview);
             trendMovie.push(oneMovie);
         })
-        
+
         return res.status(200).json(trendMovie);
     }).catch((error) => {
         errorHandler(error, req, res)
@@ -57,29 +105,16 @@ function getTrendingHandler(req, res) {
 
 }
 
-app.get("/search", searchMoviesHandler),
 
-    function searchMoviesHandler(req, res) {
-        let searchQuery = req.query.search;
-        let selectedMovie = [];
-        axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${APIKEY}&language=en-US&query=${searchQuery}`).then(value => {
-            value.data.results.forEach(element => {
-                selectedMovie.push(element);
-            })
-            return res.status(200).json(selectedMovie);
-        }).catch((error) => {
-            errorHandler(error, req, res)
+
+function searchMoviesHandler(req, res) {
+    let searchQuery = req.query.search;
+    let selectedMovie = [];
+    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${APIKEY}&language=en-US&query=${searchQuery}`).then(value => {
+        value.data.results.forEach(element => {
+            selectedMovie.push(element);
         })
-    }
-
-
-
-app.get("/configuration" , conf),
-function conf (req ,res){
-   
-    axios.get(`https://api.themoviedb.org/3/configuration?api_key=${APIKEY}&language=en-US`).then (value => {
-       let conf= value.data.images;
-       return res.status(200).json(conf);
+        return res.status(200).json(selectedMovie);
     }).catch((error) => {
         errorHandler(error, req, res)
     })
@@ -87,6 +122,16 @@ function conf (req ,res){
 
 
 
+
+function conf(req, res) {
+
+    axios.get(`https://api.themoviedb.org/3/configuration?api_key=${APIKEY}&language=en-US`).then(value => {
+        let conf = value.data.images;
+        return res.status(200).json(conf);
+    }).catch((error) => {
+        errorHandler(error, req, res)
+    })
+}
 
 
 
@@ -111,6 +156,9 @@ function notFountHandler(req, res) {
 }
 
 
-app.listen(PORT, () => {
-    console.log(`im listen to ${PORT}`);
+
+Client.connect().then(() => {
+    app.listen(PORT, () => {
+        console.log(`im listen to ${PORT}`);
+    });
 });
