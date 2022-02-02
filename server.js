@@ -22,7 +22,9 @@ app.get("/trending", getTrendingHandler);
 app.get("/search", searchMoviesHandler);
 app.get("/configuration", conf)
 
-
+app.get("/getMovie/id" ,getMovieByIdHandler);
+app.put("/UPDATE/id" , updateMovieHandler);
+app.delete("/DELETE/id", deleteMovieHandler);
 
 
 
@@ -69,6 +71,55 @@ function getMovieHandler(req, res) {
 
 
 
+
+function getMovieByIdHandler(req,res){
+const id=req.params.id;
+const sql =`SELECT * FROM addMovie WHERE id =${id} `;
+client.query(sql).then (data => {
+res.status(200).json(data.rows);
+}).catch((error) => {
+    errorHandler(error, req, res);
+})
+
+
+
+}
+
+
+
+
+function updateMovieHandler(req,res) {
+const id =req.params.id;
+const movie = req.body;
+const sql =`UPDATE addMovie SET id=$1, title=$2 ,release_date=$3 , poster_path=$4 , overview=$5 , Comment =$6  WHERE id=${id} RETURNING * ;`;
+const values =[movie.id,movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment];
+client.query(sql,values).then (data => {
+   return res.status(200).json(data.rows);
+}).catch((error) => {
+    errorHandler(error, req, res);
+  
+})
+
+}
+
+
+
+
+function  deleteMovieHandler (req,res){
+const id =req.params.id;
+const sql =`DELETE FROM addMovie WHERE id =${id} ;`
+client.query(sql).then(() =>{
+    return res.status(204).json([]);
+}).catch((error) => {
+    errorHandler(error, req, res);
+  
+})
+
+
+}
+
+
+
 function review(req, res) {
 
 
@@ -96,6 +147,7 @@ function getTrendingHandler(req, res) {
         value.data.results.forEach(element => {
             let oneMovie = new Movie(element.id, element.title, element.release_date, element.poster_path, element.overview);
             trendMovie.push(oneMovie);
+            
         })
 
         return res.status(200).json(trendMovie);
@@ -119,6 +171,7 @@ function searchMoviesHandler(req, res) {
         errorHandler(error, req, res)
     })
 }
+
 
 
 
