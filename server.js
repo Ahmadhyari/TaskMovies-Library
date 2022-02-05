@@ -11,7 +11,14 @@ const PORT = process.env.PORT;
 app.use(express.json());
 const pg = require("pg");
 const DATABASE_URL = process.env.DATA
-const Client = new pg.Client(DATABASE_URL);
+// const Client = new pg.Client(DATABASE_URL);
+
+const client = new pg.Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
+
 
 
 app.post("/addMovie", addMovieHandler);
