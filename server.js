@@ -131,8 +131,10 @@ function review(req, res) {
 
 
     let movieInfo = new Movie(appData.title, appData.poster_path, appData.overview);
+// return res.status(200).json(movieInfo);
 
-    return res.status(200).json(movieInfo);
+
+    return res.status(200).send("Hello world i'm Ahmad Hyari");
 
 }
 
