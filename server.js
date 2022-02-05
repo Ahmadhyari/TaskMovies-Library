@@ -40,7 +40,7 @@ function favoritePage(req, res) {
 }
 
 
-app.get("/trending", getTrendingHandler)
+app.get("/trending", getTrendingHandler);
 
 function getTrendingHandler(req, res) {
     let trendMovie = [];
@@ -57,7 +57,7 @@ function getTrendingHandler(req, res) {
 
 }
 
-app.get("/search", searchMoviesHandler),
+app.get("/search", searchMoviesHandler);
 
     function searchMoviesHandler(req, res) {
         let searchQuery = req.query.search;
@@ -67,6 +67,8 @@ app.get("/search", searchMoviesHandler),
                 selectedMovie.push(element);
             })
             return res.status(200).json(selectedMovie);
+
+
         }).catch((error) => {
             errorHandler(error, req, res)
         })
@@ -74,7 +76,7 @@ app.get("/search", searchMoviesHandler),
 
 
 
-app.get("/configuration" , conf),
+app.get("/configuration" , conf);
 function conf (req ,res){
    
     axios.get(`https://api.themoviedb.org/3/configuration?api_key=${APIKEY}&language=en-US`).then (value => {
@@ -84,6 +86,23 @@ function conf (req ,res){
         errorHandler(error, req, res)
     })
 }
+
+// --------------add second route----------------
+
+app.get("/discover/movie" , dis);
+
+function dis (req ,res){
+    axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${APIKEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_watch_monetization_types=flatrate`) .then (value => {
+        let dis=value.data.results;
+        return res.status(200).json(dis);
+
+    }).catch((error) =>{
+        errorHandler(error,res,res)
+    })
+}
+
+
+
 
 
 
@@ -97,10 +116,10 @@ app.use(errorHandler);
 function errorHandler(error, req, res) {
     const err = {
         status: 500,
-        Aleart: Error
+        message: error
     }
 
-    res.status(500).send(err);
+     return res.status(500).send(err);
 }
 
 
