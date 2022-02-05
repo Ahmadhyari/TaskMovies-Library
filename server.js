@@ -20,7 +20,8 @@ app.get(`/`, review);
 app.get("/favorite", favoritePage);
 app.get("/trending", getTrendingHandler);
 app.get("/search", searchMoviesHandler);
-app.get("/configuration", conf)
+app.get("/configuration", conf);
+
 
 app.get("/getMovie/id" ,getMovieByIdHandler);
 app.put("/UPDATE/id" , updateMovieHandler);
@@ -141,6 +142,10 @@ function favoritePage(req, res) {
 
 
 
+
+
+
+
 function getTrendingHandler(req, res) {
     let trendMovie = [];
     axios.get(`https://api.themoviedb.org/3/trending/all/week?api_key=${APIKEY}&language=en-US`).then(value => {
@@ -159,18 +164,43 @@ function getTrendingHandler(req, res) {
 
 
 
-function searchMoviesHandler(req, res) {
-    let searchQuery = req.query.search;
-    let selectedMovie = [];
-    axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${APIKEY}&language=en-US&query=${searchQuery}`).then(value => {
-        value.data.results.forEach(element => {
-            selectedMovie.push(element);
+
+    function searchMoviesHandler(req, res) {
+        let searchQuery = req.query.search;
+        let selectedMovie = [];
+        axios.get(`https://api.themoviedb.org/3/search/movie?api_key=${APIKEY}&language=en-US&query=${searchQuery}`).then(value => {
+            value.data.results.forEach(element => {
+                selectedMovie.push(element);
+            })
+            return res.status(200).json(selectedMovie);
+
+
+        }).catch((error) => {
+            errorHandler(error, req, res)
         })
-        return res.status(200).json(selectedMovie);
-    }).catch((error) => {
-        errorHandler(error, req, res)
+    }
+
+
+
+
+
+
+
+// --------------add second route----------------
+
+app.get("/discover/movie" , dis);
+
+function dis (req ,res){
+    axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${APIKEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_watch_monetization_types=flatrate`) .then (value => {
+        let dis=value.data.results;
+        return res.status(200).json(dis);
+
+    }).catch((error) =>{
+        errorHandler(error,res,res)
     })
 }
+//  --------------------------------------
+
 
 
 
@@ -195,10 +225,10 @@ app.use(errorHandler);
 function errorHandler(error, req, res) {
     const err = {
         status: 500,
-        Aleart: Error
+        message: error
     }
 
-    res.status(500).send(err);
+     return res.status(500).send(err);
 }
 
 
